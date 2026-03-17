@@ -184,6 +184,93 @@
       margin-top: 10px;
     }
     
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: #1a1a2e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 450px;
+      width: 90%;
+    }
+    
+    .modal h2 {
+      font-size: 24px;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      font-size: 16px;
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: #a78bfa;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+    
+    .modal-buttons button {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-cancel {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #94a3b8;
+    }
+    
+    .btn-submit {
+      background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+      color: white;
+    }
+    
     footer {
       text-align: center;
       margin-top: 60px;
@@ -230,7 +317,7 @@
           <li>AI-powered features</li>
           <li>Priority support</li>
         </ul>
-        <button class="btn btn-primary" onclick="subscribe('monthly')">Subscribe Monthly</button>
+        <button class="btn btn-primary" onclick="openModal('monthly')">Subscribe Monthly</button>
       </div>
       
       <div class="plan yearly">
@@ -245,7 +332,7 @@
           <li>Priority onboarding</li>
           <li>Custom branding</li>
         </ul>
-        <button class="btn btn-outline" onclick="subscribe('yearly')">Subscribe Yearly</button>
+        <button class="btn btn-outline" onclick="openModal('yearly')">Subscribe Yearly</button>
       </div>
     </div>
     
@@ -257,29 +344,74 @@
     </footer>
   </div>
   
+  <!-- Modal -->
+  <div class="modal" id="subscribeModal">
+    <div class="modal-content">
+      <h2>Get Started</h2>
+      <form id="subscribeForm" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <label>Church Name</label>
+          <input type="text" id="churchName" placeholder="Your church name" required>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="you@church.com" required>
+        </div>
+        <div class="form-group">
+          <label>Phone (optional)</label>
+          <input type="tel" id="phone" placeholder="(555) 123-4567">
+        </div>
+        <input type="hidden" id="selectedPlan">
+        <div class="modal-buttons">
+          <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Continue to Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
   <script>
     const API_URL = 'https://new-birth-api.onrender.com';
     
     // Replace with your real Stripe Price IDs
     const prices = {
-      monthly: 'price_monthly_xxx',   // $84/month - create in Stripe Dashboard
-      yearly: 'price_yearly_xxx'     // $780/year - create in Stripe Dashboard
+      monthly: 'price_monthly_xxx',   // $84/month
+      yearly: 'price_yearly_xxx'     // $780/year
     };
     
-    async function subscribe(plan) {
-      const churchId = prompt('Enter your church ID:');
-      if (!churchId) return;
+    function openModal(plan) {
+      document.getElementById('selectedPlan').value = plan;
+      document.getElementById('subscribeModal').classList.add('show');
+      document.getElementById('churchName').focus();
+    }
+    
+    function closeModal() {
+      document.getElementById('subscribeModal').classList.remove('show');
+      document.getElementById('subscribeForm').reset();
+    }
+    
+    async function handleSubmit(e) {
+      e.preventDefault();
       
-      const churchName = prompt('Enter your church name:');
-      if (!churchName) return;
+      const churchName = document.getElementById('churchName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const plan = document.getElementById('selectedPlan').value;
+      
+      // Show loading
+      const submitBtn = document.querySelector('.btn-submit');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Processing...';
+      submitBtn.disabled = true;
       
       try {
         const response = await fetch(`${API_URL}/subscriptions/create-checkout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            churchId,
             churchName,
+            email,
+            phone,
             priceId: prices[plan]
           })
         });
@@ -290,10 +422,14 @@
           window.location.href = data.url;
         } else {
           alert('Error creating subscription. Please try again.');
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
         }
       } catch (error) {
         console.error(error);
         alert('Error connecting to server. Please try again.');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
       }
     }
   </script>
