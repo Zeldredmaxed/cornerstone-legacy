@@ -243,6 +243,49 @@
       border-color: #a78bfa;
     }
     
+    .checkbox-group {
+      margin-top: 25px;
+    }
+    
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+    
+    .checkbox-label input {
+      display: none;
+    }
+    
+    .checkbox-label .checkmark {
+      width: 22px;
+      height: 22px;
+      border: 2px solid rgba(167, 139, 250, 0.5);
+      border-radius: 6px;
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .checkbox-label input:checked + .checkmark {
+      background: #a78bfa;
+      border-color: #a78bfa;
+    }
+    
+    .checkbox-label input:checked + .checkmark::after {
+      content: "✓";
+      color: white;
+      font-size: 14px;
+    }
+    
+    .checkbox-text {
+      color: #94a3b8;
+    }
+    
     .modal-buttons {
       display: flex;
       gap: 15px;
@@ -361,6 +404,15 @@
           <label>Phone (optional)</label>
           <input type="tel" id="phone" placeholder="(555) 123-4567">
         </div>
+        
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoRenew" checked>
+            <span class="checkmark"></span>
+            <span class="checkbox-text">Auto-renew automatically (cancel anytime)</span>
+          </label>
+        </div>
+        
         <input type="hidden" id="selectedPlan">
         <div class="modal-buttons">
           <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
